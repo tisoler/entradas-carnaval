@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nombreUsuario String   @unique @db.VarChar(100)
+  password      String   @db.VarChar(255)
+  rol           Rol
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("usuario")
+}
+
+model Entrada {
+  id            Int      @id @default(autoincrement())
+  nombre        String   @db.VarChar(100)
+  apellido      String   @db.VarChar(100)
+  dni           String   @db.VarChar(20)
+  estado        Estado   @default(PENDIENTE_INGRESO)
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion")
+  fechaIngreso  DateTime? @map("fecha_ingreso")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  idUsuario     Int
+
+  @@index([dni], map: "idx_entrada_dni")
+  @@index([nombre], map: "idx_entrada_nombre")
+  @@index([apellido], map: "idx_entrada_apellido")
+  @@index([estado], map: "idx_entrada_estado")
+  @@map("entrada")
+}
+
+enum Rol {
+  admin
+  vendedor
+  receptor
+}
+
+enum Estado {
+  PENDIENTE_INGRESO @map("pendiente ingreso")
+  INGRESO_REGISTRADO @map("ingreso registrado")
+}

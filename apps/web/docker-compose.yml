@@ -1,0 +1,20 @@
+services:
+  carnaval-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carnaval-web
+    restart: unless-stopped
+    environment:
+      PORT: 3027
+      DATABASE_URL: mysql://carnaval_cu:Peron1946!@146.190.118.241:3306/carnaval_entradas
+      JWT_SECRET: comunidad_organizada
+      NODE_ENV: production
+    ports:
+      - "3027:3027"
+     # Add healthcheck to ensure the application is running
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:3027"] # 3079 en producción
+      interval: 30s
+      timeout: 10s
+      retries: 3
