@@ -11,21 +11,29 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
-    
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '30');
+    const skip = (page - 1) * limit;
+
     const where = search
       ? {
-          OR: [
-            { dni: { contains: search } },
-            { nombre: { contains: search } },
-            { apellido: { contains: search } },
-          ],
-        }
+        OR: [
+          { dni: { contains: search } },
+          { nombre: { contains: search } },
+          { apellido: { contains: search } },
+        ],
+      }
       : {};
 
-    const entradas = await prisma.entrada.findMany({
-      where,
-      orderBy: { fechaCreacion: 'desc' },
-    });
+    const [entradas, total] = await Promise.all([
+      prisma.entrada.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { fechaCreacion: 'desc' },
+      }),
+      prisma.entrada.count({ where }),
+    ]);
 
     // Convertir a formato esperado por el frontend
     const formattedEntradas = entradas.map((entrada: any) => ({
@@ -40,7 +48,15 @@ export async function GET(request: NextRequest) {
       updated_at: entrada.updatedAt.toISOString(),
     }));
 
-    return NextResponse.json(formattedEntradas);
+    return NextResponse.json({
+      data: formattedEntradas,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error('Error al obtener entradas:', error);
     return NextResponse.json(
@@ -88,6 +104,10 @@ export async function POST(request: NextRequest) {
       created_at: entrada.createdAt.toISOString(),
       updated_at: entrada.updatedAt.toISOString(),
     };
+
+    // Emitir evento de actualización
+    const { events } = await import('@/lib/events');
+    events.emit('update');
 
     return NextResponse.json(formattedEntrada, { status: 201 });
   } catch (error) {

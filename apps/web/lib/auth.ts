@@ -18,6 +18,15 @@ export function verifyToken(token: string): JWTUser | null {
   }
 }
 
+export function verifyRefreshToken(token: string): JWTUser | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTUser;
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
 export function authenticateToken(request: NextRequest): JWTUser | null {
   const authHeader = request.headers.get('authorization');
   const token = authHeader && authHeader.split(' ')[1];
@@ -33,6 +42,14 @@ export function generateToken(user: { id: number; nombreUsuario: string; rol: st
   return jwt.sign(
     { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol },
     JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: '1h' }
+  );
+}
+
+export function generateRefreshToken(user: { id: number; nombreUsuario: string; rol: string }): string {
+  return jwt.sign(
+    { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol, type: 'refresh' },
+    JWT_SECRET,
+    { expiresIn: '7d' }
   );
 }

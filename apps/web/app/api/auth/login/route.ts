@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
-import { generateToken } from '@/lib/auth';
+import { generateToken, generateRefreshToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,8 +40,15 @@ export async function POST(request: NextRequest) {
       rol: user.rol,
     });
 
+    const refreshToken = generateRefreshToken({
+      id: user.id,
+      nombreUsuario: user.nombreUsuario,
+      rol: user.rol,
+    });
+
     return NextResponse.json({
       token,
+      refreshToken,
       user: {
         id: user.id,
         nombreUsuario: user.nombreUsuario,

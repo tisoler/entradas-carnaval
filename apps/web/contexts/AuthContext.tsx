@@ -17,13 +17,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
+    const storedRefreshToken = localStorage.getItem('refreshToken');
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
       setToken(storedToken);
+      if (storedRefreshToken) setRefreshToken(storedRefreshToken);
       setUser(JSON.parse(storedUser));
     }
   }, []);
@@ -32,8 +35,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.login(nombreUsuario, password);
       setToken(response.token);
+      setRefreshToken(response.refreshToken);
       setUser(response.user);
       localStorage.setItem('token', response.token);
+      localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
     } catch (error) {
       throw error;
@@ -43,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleLogout = () => {
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     apiLogout();
   };
 

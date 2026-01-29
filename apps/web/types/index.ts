@@ -18,6 +18,7 @@ export interface Entrada {
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
   user: Usuario;
 }
 
@@ -25,4 +26,14 @@ export interface CreateEntradaRequest {
   nombre: string;
   apellido: string;
   dni: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }

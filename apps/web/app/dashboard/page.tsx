@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, logout, isAuthenticated } = useAuth();
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const queryClient = useQueryClient();
@@ -24,11 +25,42 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, router]);
 
-  const { data: entradas = [], isLoading } = useQuery({
-    queryKey: ['entradas', search],
-    queryFn: () => api.getEntradas(search || undefined),
+  const { data, isLoading } = useQuery({
+    queryKey: ['entradas', search, page],
+    queryFn: () => api.getEntradas(search || undefined, page),
     enabled: isAuthenticated,
   });
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Conectar a SSE
+    const eventSource = new EventSource('/api/events');
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'invalidate') {
+          // Invalidar consultas cuando hay una actualización
+          queryClient.invalidateQueries({ queryKey: ['entradas'] });
+        }
+      } catch (error) {
+        console.error('Error al procesar evento SSE:', error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('Error en SSE:', error);
+      // EventSource intenta reconectar automáticamente por defecto
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [isAuthenticated, queryClient]);
+
+  const entradas = data?.data || [];
+  const meta = data?.meta || { total: 0, page: 1, limit: 30, totalPages: 1 };
 
   const updateEstadoMutation = useMutation({
     mutationFn: ({ id, estado }: { id: number; estado: 'pendiente ingreso' | 'ingreso registrado' }) =>
@@ -94,7 +126,10 @@ export default function DashboardPage() {
               type="text"
               placeholder="Buscar por DNI, nombre o apellido..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
             />
           </div>
@@ -118,6 +153,10 @@ export default function DashboardPage() {
           entradas={entradas}
           isLoading={isLoading}
           onToggleEstado={handleToggleEstado}
+          currentPage={page}
+          totalPages={meta.totalPages}
+          total={meta.total}
+          onPageChange={setPage}
         />
 
         {showCreateModal && (

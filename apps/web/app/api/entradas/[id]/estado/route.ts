@@ -58,6 +58,10 @@ export async function PATCH(
       updated_at: entrada.updatedAt.toISOString(),
     };
 
+    // Emitir evento de actualización
+    const { events } = await import('@/lib/events');
+    events.emit('update');
+
     return NextResponse.json(formattedEntrada);
   } catch (error: any) {
     if (error.code === 'P2025') {
