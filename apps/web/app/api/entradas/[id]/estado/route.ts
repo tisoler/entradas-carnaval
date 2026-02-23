@@ -37,12 +37,28 @@ export async function PATCH(
     const estadoPrisma = estado === 'pendiente ingreso' ? 'PENDIENTE_INGRESO' : 'INGRESO_REGISTRADO';
     const fechaIngreso = estado === 'ingreso registrado' ? new Date() : null;
 
-    const entrada = await prisma.entrada.update({
-      where: { id: entradaId },
-      data: {
-        estado: estadoPrisma,
-        fechaIngreso,
-      },
+    const entrada = await prisma.$transaction(async (tx) => {
+      const updated = await tx.entrada.update({
+        where: { id: entradaId },
+        data: {
+          estado: estadoPrisma,
+          fechaIngreso,
+        },
+      });
+
+      if (estadoPrisma === 'INGRESO_REGISTRADO') {
+        await tx.ingreso.upsert({
+          where: { idEntrada: entradaId },
+          update: {},
+          create: { idEntrada: entradaId },
+        });
+      } else {
+        await tx.ingreso.deleteMany({
+          where: { idEntrada: entradaId },
+        });
+      }
+
+      return updated;
     });
 
     // Convertir a formato esperado por el frontend
@@ -57,10 +73,6 @@ export async function PATCH(
       created_at: entrada.createdAt.toISOString(),
       updated_at: entrada.updatedAt.toISOString(),
     };
-
-    // Emitir evento de actualización
-    const { events } = await import('@/lib/events');
-    events.emit('update');
 
     return NextResponse.json(formattedEntrada);
   } catch (error: any) {

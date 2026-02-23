@@ -163,6 +163,24 @@ export const api = {
 
     return response.json();
   },
+
+  async getIngresosTotal(): Promise<{ total: number }> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/ingresos`);
+    if (!response.ok) {
+      throw new Error('Error al obtener total de ingresos');
+    }
+    return response.json();
+  },
+
+  async registrarIngresoManual(): Promise<{ id: number }> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/ingresos`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      throw new Error('Error al registrar ingreso manual');
+    }
+    return response.json();
+  },
 };
 
 export const logout = () => {

@@ -94,7 +94,8 @@ export default function EntradaList({
             {entradas.map((entrada) => {
               const isRegistrado = entrada.estado === 'ingreso registrado';
               return (
-                <tr key={entrada.id} className="hover:bg-gray-50 transition-colors" onClick={() => onOpenModal(entrada)}>
+                <tr key={entrada.id} className="hover:bg-gray-50 transition-colors">
+                  {/* onClick={() => onOpenModal(entrada)} */}
                   <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                     {entrada.nombre}
                   </td>
@@ -119,8 +120,8 @@ export default function EntradaList({
                   <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap">
                     <span
                       className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${isRegistrado
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-orange-100 text-orange-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-orange-100 text-orange-800'
                         }`}
                     >
                       {isRegistrado ? '✓ Ingreso Registrado' : '⏳ Pendiente Ingreso'}
@@ -130,8 +131,8 @@ export default function EntradaList({
                     <button
                       onClick={(e) => onToggleEstado(e, entrada)}
                       className={`px-4 py-2 rounded-lg font-semibold text-xs transition ${isRegistrado
-                          ? 'bg-orange-500 text-white hover:bg-orange-600'
-                          : 'bg-green-500 text-white hover:bg-green-600'
+                        ? 'bg-orange-500 text-white hover:bg-orange-600'
+                        : 'bg-green-500 text-white hover:bg-green-600'
                         }`}
                     >
                       {isRegistrado ? '↩️ Marcar Pendiente' : '✓ Marcar Registrado'}
@@ -141,8 +142,8 @@ export default function EntradaList({
                     <button
                       onClick={(e) => onToggleEstado(e, entrada)}
                       className={`px-2 py-3 rounded-lg font-semibold text-xs transition text-wrap ${isRegistrado
-                          ? 'bg-green-500 text-white hover:bg-green-600'
-                          : 'bg-orange-500 text-white hover:bg-orange-600'
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-orange-500 text-white hover:bg-orange-600'
                         }`}
                     >
                       {isRegistrado ? 'Ingreso Registrado' : 'Pendiente Ingreso'}
@@ -212,8 +213,8 @@ export default function EntradaList({
                       key={page}
                       onClick={() => onPageChange(page)}
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
-                          ? 'z-10 bg-red-50 border-red-500 text-red-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        ? 'z-10 bg-red-50 border-red-500 text-red-600'
+                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                         }`}
                     >
                       {page}

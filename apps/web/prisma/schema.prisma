@@ -32,12 +32,22 @@ model Entrada {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
   idUsuario     Int
+  ingreso       Ingreso?
 
   @@index([dni], map: "idx_entrada_dni")
   @@index([nombre], map: "idx_entrada_nombre")
   @@index([apellido], map: "idx_entrada_apellido")
   @@index([estado], map: "idx_entrada_estado")
   @@map("entrada")
+}
+
+model Ingreso {
+  id        Int      @id @default(autoincrement())
+  fecha     DateTime @default(now())
+  idEntrada Int?     @unique
+  entrada   Entrada? @relation(fields: [idEntrada], references: [id], onDelete: Cascade)
+  
+  @@map("ingreso")
 }
 
 enum Rol {

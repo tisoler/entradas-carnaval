@@ -33,13 +33,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Actualizar el estado
-    const entradaActualizada = await prisma.entrada.update({
-      where: { id: entradaId },
-      data: {
-        estado: 'INGRESO_REGISTRADO',
-        fechaIngreso: new Date(),
-      },
+    // Actualizar el estado e insertar en ingreso
+    const entradaActualizada = await prisma.$transaction(async (tx) => {
+      const updated = await tx.entrada.update({
+        where: { id: entradaId },
+        data: {
+          estado: 'INGRESO_REGISTRADO',
+          fechaIngreso: new Date(),
+        },
+      });
+
+      await tx.ingreso.upsert({
+        where: { idEntrada: entradaId },
+        update: {},
+        create: { idEntrada: entradaId },
+      });
+
+      return updated;
     });
 
     // Convertir a formato esperado por el frontend

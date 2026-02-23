@@ -29,35 +29,27 @@ export default function DashboardPage() {
     queryKey: ['entradas', search, page],
     queryFn: () => api.getEntradas(search || undefined, page),
     enabled: isAuthenticated,
+    refetchInterval: 15000, // Refetch cada 15 segundos
   });
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  const { data: ingresosData } = useQuery({
+    queryKey: ['ingresos_total'],
+    queryFn: () => api.getIngresosTotal(),
+    enabled: isAuthenticated,
+    refetchInterval: 15000, // Refetch cada 15 segundos
+  });
 
-    // Conectar a SSE
-    const eventSource = new EventSource('/api/events');
+  const manualIngresoMutation = useMutation({
+    mutationFn: () => api.registrarIngresoManual(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
+    },
+    onError: (error: any) => {
+      alert(error.message || 'Error al registrar entrada en caja');
+    },
+  });
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'invalidate') {
-          // Invalidar consultas cuando hay una actualización
-          queryClient.invalidateQueries({ queryKey: ['entradas'] });
-        }
-      } catch (error) {
-        console.error('Error al procesar evento SSE:', error);
-      }
-    };
 
-    eventSource.onerror = (error) => {
-      console.error('Error en SSE:', error);
-      // EventSource intenta reconectar automáticamente por defecto
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [isAuthenticated, queryClient]);
 
   const entradas = data?.data || [];
   const meta = data?.meta || { total: 0, page: 1, limit: 30, totalPages: 1 };
@@ -67,6 +59,7 @@ export default function DashboardPage() {
       api.updateEntradaEstado(id, estado),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entradas'] });
+      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
     },
   });
 
@@ -74,6 +67,7 @@ export default function DashboardPage() {
     mutationFn: (entradaId: number) => api.scanEntrada(entradaId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entradas'] });
+      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
       setShowScanner(false);
       alert('Ingreso registrado exitosamente');
       router.push('/');
@@ -121,17 +115,33 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex-1 w-full sm:max-w-md">
-            <input
-              type="text"
-              placeholder="Buscar por DNI, nombre o apellido..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
-            />
+          <div className="flex-1 w-full flex flex-col items-center">
+            {ingresosData && (
+              <div className="mb-4 bg-white/10 p-3 rounded-lg shadow border border-gray-200 flex items-center gap-4">
+                <span className="text-xl font-bold text-white tracking-widest bg-gradient-to-r from-red-600 to-blue-600 px-4 py-2 rounded-md shadow-inner">
+                  Total Ingresos: {ingresosData.total}
+                </span>
+                <button
+                  onClick={() => manualIngresoMutation.mutate()}
+                  disabled={manualIngresoMutation.isPending}
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {manualIngresoMutation.isPending ? 'Procesando...' : 'Entrada en caja'}
+                </button>
+              </div>
+            )}
+            <div className="w-full sm:max-w-md">
+              <input
+                type="text"
+                placeholder="Buscar por DNI, nombre o apellido..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
+              />
+            </div>
           </div>
           <div className="flex gap-3">
             <button
@@ -140,12 +150,14 @@ export default function DashboardPage() {
             >
               Escanear QR
             </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-neutral-800 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition"
-            >
-              + Crear Entrada
-            </button>
+            { /*
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-6 py-3 bg-neutral-800 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition"
+              >
+                + Crear Entrada
+              </button>
+            */ }
           </div>
         </div>
 

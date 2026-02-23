@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS entrada (
     idUsuario INT
 );
 
+-- Tabla de ingresos
+CREATE TABLE IF NOT EXISTS ingreso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    idEntrada INT UNIQUE DEFAULT NULL,
+    FOREIGN KEY (idEntrada) REFERENCES entrada(id) ON DELETE CASCADE
+);
+
 -- Índices para búsquedas rápidas
 CREATE INDEX idx_entrada_dni ON entrada(dni);
 CREATE INDEX idx_entrada_nombre ON entrada(nombre);

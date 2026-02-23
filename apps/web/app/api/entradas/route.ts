@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { authenticateToken } from '@/lib/auth';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +16,34 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '30');
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? {
-        OR: [
-          { dni: { contains: search } },
-          { nombre: { contains: search } },
-          { apellido: { contains: search } },
-        ],
+    let where: any = {};
+
+    if (search) {
+      const searchClean = search.replace(/\\D/g, '');
+      const hasDigits = searchClean.length > 0;
+
+      const conditions = [
+        Prisma.sql`nombre LIKE ${`%${search}%`}`,
+        Prisma.sql`apellido LIKE ${`%${search}%`}`,
+        Prisma.sql`dni LIKE ${`%${search}%`}`
+      ];
+
+      if (hasDigits) {
+        conditions.push(Prisma.sql`REPLACE(REPLACE(REPLACE(dni, '.', ''), '-', ''), ' ', '') LIKE ${`%${searchClean}%`}`);
       }
-      : {};
+
+      const rawQuery = Prisma.sql`
+        SELECT id FROM entrada
+        WHERE ${Prisma.join(conditions, ' OR ')}
+      `;
+
+      const idsResult: { id: number }[] = await prisma.$queryRaw(rawQuery);
+      const matchingIds = idsResult.map(r => r.id);
+
+      where = {
+        id: { in: matchingIds }
+      };
+    }
 
     const [entradas, total] = await Promise.all([
       prisma.entrada.findMany({
@@ -104,10 +124,6 @@ export async function POST(request: NextRequest) {
       created_at: entrada.createdAt.toISOString(),
       updated_at: entrada.updatedAt.toISOString(),
     };
-
-    // Emitir evento de actualización
-    const { events } = await import('@/lib/events');
-    events.emit('update');
 
     return NextResponse.json(formattedEntrada, { status: 201 });
   } catch (error) {
