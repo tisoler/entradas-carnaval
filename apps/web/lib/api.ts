@@ -1,4 +1,4 @@
-import { LoginResponse, Entrada, CreateEntradaRequest, Usuario, PaginatedResponse, Evento, CreateEventoRequest } from '@/types';
+import { LoginResponse, Entrada, CreateEntradaRequest, PaginatedResponse, Evento, CreateEventoRequest } from '@/types';
 
 // En Next.js, las rutas API son relativas
 const API_BASE_URL = '/api';

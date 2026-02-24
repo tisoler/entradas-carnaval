@@ -6,11 +6,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import CreateEventoModal from '@/components/CreateEventoModal';
+import EditEventoModal from '@/components/EditEventoModal';
+import { Evento } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, logout, isAuthenticated } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [eventoToEdit, setEventoToEdit] = useState<Evento | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -85,9 +88,23 @@ export default function DashboardPage() {
                 <div
                   key={evento.id}
                   onClick={() => router.push(`/dashboard/evento/${evento.id}`)}
-                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 border border-gray-100"
+                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 border border-gray-100 relative group"
                 >
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2 truncate">{evento.nombre}</h3>
+                  {user?.rol === 'admin' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEventoToEdit(evento);
+                      }}
+                      className="absolute top-4 right-4 p-2 bg-gray-100 text-gray-600 rounded-full opacity-0 group-hover:opacity-100 hover:bg-blue-100 hover:text-blue-600 transition"
+                      title="Editar Evento"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2 truncate pr-10">{evento.nombre}</h3>
                   {evento.descripcion && <p className="text-gray-600 text-sm mb-4 line-clamp-2">{evento.descripcion}</p>}
 
                   <div className="space-y-2 text-sm">
@@ -111,6 +128,17 @@ export default function DashboardPage() {
             onClose={() => setShowCreateModal(false)}
             onSuccess={() => {
               setShowCreateModal(false);
+              queryClient.invalidateQueries({ queryKey: ['eventos'] });
+            }}
+          />
+        )}
+
+        {eventoToEdit && (
+          <EditEventoModal
+            evento={eventoToEdit}
+            onClose={() => setEventoToEdit(null)}
+            onSuccess={() => {
+              setEventoToEdit(null);
               queryClient.invalidateQueries({ queryKey: ['eventos'] });
             }}
           />

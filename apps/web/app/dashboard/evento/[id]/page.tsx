@@ -151,7 +151,7 @@ export default function EventoPage() {
               </h1>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-gray-700">Hola, {user?.nombreUsuario} {user?.idEntidad ? `(Entidad ${user.idEntidad})` : ''}</span>
+              <span className="text-gray-700">Hola, {user?.nombreUsuario}</span>
               <button
                 onClick={() => router.push('/dashboard')}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
