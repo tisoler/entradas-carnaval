@@ -11,9 +11,10 @@ import { useAuth } from '@/contexts/AuthContext';
 interface CreateEntradaModalProps {
   onClose: () => void
   onSuccess: () => void
+  idEvento: number
 }
 
-export default function CreateEntradaModal({ onClose, onSuccess }: CreateEntradaModalProps) {
+export default function CreateEntradaModal({ onClose, onSuccess, idEvento }: CreateEntradaModalProps) {
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [dni, setDni] = useState('')
@@ -23,7 +24,7 @@ export default function CreateEntradaModal({ onClose, onSuccess }: CreateEntrada
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: (data: { nombre: string; apellido: string; dni: string, idUsuario?: number }) =>
+    mutationFn: (data: { nombre: string; apellido: string; dni: string, idUsuario?: number, idEvento: number }) =>
       api.createEntrada(data),
     onSuccess: (data) => {
       setCreatedEntrada(data);
@@ -36,7 +37,7 @@ export default function CreateEntradaModal({ onClose, onSuccess }: CreateEntrada
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    createMutation.mutate({ nombre, apellido, dni, idUsuario: user?.id })
+    createMutation.mutate({ nombre, apellido, dni, idUsuario: user?.id, idEvento })
   }
   /*
     const handleShare = async () => {

@@ -1,4 +1,4 @@
-import { LoginResponse, Entrada, CreateEntradaRequest, Usuario, PaginatedResponse } from '@/types';
+import { LoginResponse, Entrada, CreateEntradaRequest, Usuario, PaginatedResponse, Evento, CreateEventoRequest } from '@/types';
 
 // En Next.js, las rutas API son relativas
 const API_BASE_URL = '/api';
@@ -91,8 +91,9 @@ export const api = {
     return response.json();
   },
 
-  async getEntradas(search?: string, page: number = 1, limit: number = 30): Promise<PaginatedResponse<Entrada>> {
+  async getEntradas(idEvento: number, search?: string, page: number = 1, limit: number = 30): Promise<PaginatedResponse<Entrada>> {
     const url = new URL(`${API_BASE_URL}/entradas`, window.location.origin);
+    url.searchParams.append('idEvento', idEvento.toString());
     if (search) {
       url.searchParams.append('search', search);
     }
@@ -164,20 +165,64 @@ export const api = {
     return response.json();
   },
 
-  async getIngresosTotal(): Promise<{ total: number }> {
-    const response = await fetchWithAuth(`${API_BASE_URL}/ingresos`);
+  async getIngresosTotal(idEvento: number): Promise<{ total: number }> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/ingresos?idEvento=${idEvento}`);
     if (!response.ok) {
       throw new Error('Error al obtener total de ingresos');
     }
     return response.json();
   },
 
-  async registrarIngresoManual(): Promise<{ id: number }> {
+  async registrarIngresoManual(idEvento: number): Promise<{ id: number }> {
     const response = await fetchWithAuth(`${API_BASE_URL}/ingresos`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idEvento }),
     });
     if (!response.ok) {
       throw new Error('Error al registrar ingreso manual');
+    }
+    return response.json();
+  },
+
+  async getEventos(): Promise<{ data: Evento[] }> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/eventos`);
+    if (!response.ok) {
+      throw new Error('Error al obtener eventos');
+    }
+    return response.json();
+  },
+
+  async getEvento(id: number): Promise<Evento> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/eventos/${id}`);
+    if (!response.ok) {
+      throw new Error('Error al obtener evento');
+    }
+    return response.json();
+  },
+
+  async createEvento(data: CreateEventoRequest): Promise<Evento> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/eventos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error al crear evento');
+    }
+    return response.json();
+  },
+
+  async updateEvento(id: number, data: Partial<CreateEventoRequest>): Promise<Evento> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/eventos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error al actualizar evento');
     }
     return response.json();
   },

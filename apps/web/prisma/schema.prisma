@@ -15,6 +15,8 @@ model Usuario {
   nombreUsuario String   @unique @db.VarChar(100)
   password      String   @db.VarChar(255)
   rol           Rol
+  idEntidad     Int
+  entidad       Entidad  @relation(fields: [idEntidad], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -32,6 +34,8 @@ model Entrada {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
   idUsuario     Int
+  idEvento      Int
+  evento        Evento   @relation(fields: [idEvento], references: [id], onDelete: Cascade)
   ingreso       Ingreso?
 
   @@index([dni], map: "idx_entrada_dni")
@@ -45,9 +49,41 @@ model Ingreso {
   id        Int      @id @default(autoincrement())
   fecha     DateTime @default(now())
   idEntrada Int?     @unique
+  idEvento  Int
   entrada   Entrada? @relation(fields: [idEntrada], references: [id], onDelete: Cascade)
+  evento    Evento   @relation(fields: [idEvento], references: [id], onDelete: Cascade)
   
   @@map("ingreso")
+}
+
+model Entidad {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @db.VarChar(100)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  usuarios  Usuario[]
+  eventos   Evento[]
+
+  @@map("entidad")
+}
+
+model Evento {
+  id              Int       @id @default(autoincrement())
+  idEntidad       Int
+  nombre          String    @db.VarChar(100)
+  descripcion     String?   @db.Text
+  fechaVentaHasta DateTime  @db.Date
+  horaVentaHasta  DateTime  @db.Time
+  fechaEvento     DateTime  @db.Date
+  nombreImagen    String?   @db.VarChar(255)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  entidad         Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade)
+  entradas        Entrada[]
+  ingresos        Ingreso[]
+
+  @@map("evento")
 }
 
 enum Rol {

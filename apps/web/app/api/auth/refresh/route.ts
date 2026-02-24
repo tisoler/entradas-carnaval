@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Opcional: Verificar si el usuario aún existe y está activo
         const user = await prisma.usuario.findUnique({
             where: { id: decoded.id },
+            include: { entidad: true },
         });
 
         if (!user) {
@@ -38,12 +38,16 @@ export async function POST(request: NextRequest) {
             id: user.id,
             nombreUsuario: user.nombreUsuario,
             rol: user.rol,
+            idEntidad: user.idEntidad,
+            nombreEntidad: user.entidad.nombre,
         });
 
         const newRefreshToken = generateRefreshToken({
             id: user.id,
             nombreUsuario: user.nombreUsuario,
             rol: user.rol,
+            idEntidad: user.idEntidad,
+            nombreEntidad: user.entidad.nombre,
         });
 
         return NextResponse.json({
@@ -53,6 +57,8 @@ export async function POST(request: NextRequest) {
                 id: user.id,
                 nombreUsuario: user.nombreUsuario,
                 rol: user.rol,
+                idEntidad: user.idEntidad,
+                nombreEntidad: user.entidad.nombre,
             },
         });
     } catch (error) {

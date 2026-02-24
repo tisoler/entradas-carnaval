@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-600 mb-2">
-            🎭 Carnaval
+            🎟️ Entradas Paceñas
           </h1>
           <p className="text-gray-600">Sistema de Entradas Digitales</p>
         </div>

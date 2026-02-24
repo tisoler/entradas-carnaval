@@ -3,8 +3,8 @@ import Providers from "@/components/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Carnaval - Entradas Digitales",
-  description: "Sistema de gestión de entradas digitales para carnaval",
+  title: "Entradas Paceñas",
+  description: "Sistema de gestión de entradas digitales",
 };
 
 export default function RootLayout({

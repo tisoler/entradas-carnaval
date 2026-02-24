@@ -6,9 +6,12 @@ import html2canvas from "html2canvas"
 interface EntradaCardModalProps {
   entrada: Entrada
   onClose: () => void
+  ventaFinalizada?: boolean
+  eventoFinalizado?: boolean
+  nombreImagen?: string | null
 };
 
-const EntradaCardModal = ({ entrada, onClose }: EntradaCardModalProps) => {
+const EntradaCardModal = ({ entrada, onClose, ventaFinalizada, eventoFinalizado, nombreImagen }: EntradaCardModalProps) => {
   if (!entrada) return null;
   const divEntrada = useRef<HTMLDivElement>(null);
 
@@ -110,19 +113,21 @@ const EntradaCardModal = ({ entrada, onClose }: EntradaCardModalProps) => {
             <div className="flex gap-3">
               <button
                 onClick={handleDescargar}
-                className="flex-1 px-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+                disabled={eventoFinalizado}
+                className="flex-1 px-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Descargar
               </button>
               <button
                 onClick={handleShare}
-                className="flex-1 px-2 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+                disabled={eventoFinalizado}
+                className="flex-1 px-2 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Compartir
               </button>
             </div>
           </div>
-          <EntradaCard ref={divEntrada} entrada={entrada} />
+          <EntradaCard ref={divEntrada} entrada={entrada} ventaFinalizada={ventaFinalizada} nombreImagen={nombreImagen} />
         </div>
       </div>
     </div>

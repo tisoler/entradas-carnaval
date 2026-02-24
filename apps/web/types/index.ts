@@ -2,6 +2,8 @@ export interface Usuario {
   id: number;
   nombreUsuario: string;
   rol: 'admin' | 'vendedor' | 'receptor';
+  idEntidad: number;
+  nombreEntidad?: string;
 }
 
 export interface Entrada {
@@ -26,6 +28,7 @@ export interface CreateEntradaRequest {
   nombre: string;
   apellido: string;
   dni: string;
+  idEvento: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -36,4 +39,26 @@ export interface PaginatedResponse<T> {
     limit: number;
     totalPages: number;
   };
+}
+
+export interface Evento {
+  id: number;
+  idEntidad: number;
+  nombre: string;
+  descripcion: string | null;
+  fechaVentaHasta: string;
+  horaVentaHasta: string;
+  fechaEvento: string;
+  nombreImagen: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEventoRequest {
+  nombre: string;
+  descripcion?: string;
+  fechaVentaHasta: string;
+  horaVentaHasta: string;
+  fechaEvento: string;
+  nombreImagen?: string;
 }

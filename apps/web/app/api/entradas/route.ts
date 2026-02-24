@@ -15,8 +15,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '30');
     const skip = (page - 1) * limit;
+    const idEventoParam = searchParams.get('idEvento');
 
-    let where: any = {};
+    if (!idEventoParam) {
+      return NextResponse.json({ error: 'idEvento es requerido' }, { status: 400 });
+    }
+    const idEvento = parseInt(idEventoParam, 10);
+
+    let where: any = { idEvento };
 
     if (search) {
       const searchClean = search.replace(/\\D/g, '');
@@ -34,14 +40,15 @@ export async function GET(request: NextRequest) {
 
       const rawQuery = Prisma.sql`
         SELECT id FROM entrada
-        WHERE ${Prisma.join(conditions, ' OR ')}
+        WHERE idEvento = ${idEvento} AND (${Prisma.join(conditions, ' OR ')})
       `;
 
       const idsResult: { id: number }[] = await prisma.$queryRaw(rawQuery);
       const matchingIds = idsResult.map(r => r.id);
 
       where = {
-        id: { in: matchingIds }
+        id: { in: matchingIds },
+        idEvento
       };
     }
 
@@ -93,11 +100,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { nombre, apellido, dni, idUsuario } = await request.json();
+    const { nombre, apellido, dni, idUsuario, idEvento } = await request.json();
 
-    if (!nombre || !apellido || !dni || !idUsuario) {
+    if (!nombre || !apellido || !dni || !idUsuario || !idEvento) {
       return NextResponse.json(
-        { error: 'Nombre, apellido, DNI e id de usuario son requeridos' },
+        { error: 'Nombre, apellido, DNI, idUsuario e idEvento son requeridos' },
         { status: 400 }
       );
     }
@@ -109,6 +116,7 @@ export async function POST(request: NextRequest) {
         dni,
         estado: 'PENDIENTE_INGRESO',
         idUsuario,
+        idEvento,
       },
     });
 

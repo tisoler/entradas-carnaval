@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
 
       await tx.ingreso.upsert({
         where: { idEntrada: entradaId },
-        update: {},
-        create: { idEntrada: entradaId },
+        update: { idEvento: updated.idEvento },
+        create: { idEntrada: entradaId, idEvento: updated.idEvento },
       });
 
       return updated;

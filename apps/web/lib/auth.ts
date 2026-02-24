@@ -7,6 +7,8 @@ export interface JWTUser {
   id: number;
   nombreUsuario: string;
   rol: string;
+  idEntidad: number;
+  nombreEntidad?: string;
 }
 
 export function verifyToken(token: string): JWTUser | null {
@@ -38,17 +40,17 @@ export function authenticateToken(request: NextRequest): JWTUser | null {
   return verifyToken(token);
 }
 
-export function generateToken(user: { id: number; nombreUsuario: string; rol: string }): string {
+export function generateToken(user: { id: number; nombreUsuario: string; rol: string; idEntidad: number; nombreEntidad?: string }): string {
   return jwt.sign(
-    { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol },
+    { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol, idEntidad: user.idEntidad, nombreEntidad: user.nombreEntidad },
     JWT_SECRET,
     { expiresIn: '1h' }
   );
 }
 
-export function generateRefreshToken(user: { id: number; nombreUsuario: string; rol: string }): string {
+export function generateRefreshToken(user: { id: number; nombreUsuario: string; rol: string; idEntidad: number; nombreEntidad?: string }): string {
   return jwt.sign(
-    { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol, type: 'refresh' },
+    { id: user.id, nombreUsuario: user.nombreUsuario, rol: user.rol, idEntidad: user.idEntidad, nombreEntidad: user.nombreEntidad, type: 'refresh' },
     JWT_SECRET,
     { expiresIn: '7d' }
   );

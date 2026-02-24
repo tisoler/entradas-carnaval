@@ -3,20 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Entrada } from '@/types';
-import CreateEntradaModal from '@/components/CreateEntradaModal';
-import EntradaList from '@/components/EntradaList';
-import QRScanner from '@/components/QRScanner';
+import CreateEventoModal from '@/components/CreateEventoModal';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, logout, isAuthenticated } = useAuth();
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -26,69 +20,17 @@ export default function DashboardPage() {
   }, [isAuthenticated, router]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['entradas', search, page],
-    queryFn: () => api.getEntradas(search || undefined, page),
+    queryKey: ['eventos'],
+    queryFn: () => api.getEventos(),
     enabled: isAuthenticated,
-    refetchInterval: 15000, // Refetch cada 15 segundos
+    refetchInterval: 60000, // Refetch eventos cada minuto
   });
-
-  const { data: ingresosData } = useQuery({
-    queryKey: ['ingresos_total'],
-    queryFn: () => api.getIngresosTotal(),
-    enabled: isAuthenticated,
-    refetchInterval: 15000, // Refetch cada 15 segundos
-  });
-
-  const manualIngresoMutation = useMutation({
-    mutationFn: () => api.registrarIngresoManual(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
-    },
-    onError: (error: any) => {
-      alert(error.message || 'Error al registrar entrada en caja');
-    },
-  });
-
-
-
-  const entradas = data?.data || [];
-  const meta = data?.meta || { total: 0, page: 1, limit: 30, totalPages: 1 };
-
-  const updateEstadoMutation = useMutation({
-    mutationFn: ({ id, estado }: { id: number; estado: 'pendiente ingreso' | 'ingreso registrado' }) =>
-      api.updateEntradaEstado(id, estado),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entradas'] });
-      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
-    },
-  });
-
-  const scanMutation = useMutation({
-    mutationFn: (entradaId: number) => api.scanEntrada(entradaId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entradas'] });
-      queryClient.invalidateQueries({ queryKey: ['ingresos_total'] });
-      setShowScanner(false);
-      alert('Ingreso registrado exitosamente');
-      router.push('/');
-    },
-    onError: (error: any) => {
-      alert(error.message || 'Error al escanear entrada');
-      router.push('/');
-    },
-  });
-
-  const handleToggleEstado = (e: React.MouseEvent<HTMLButtonElement>, entrada: Entrada) => {
-    e.stopPropagation();
-    const nuevoEstado = entrada.estado === 'pendiente ingreso'
-      ? 'ingreso registrado'
-      : 'pendiente ingreso';
-    updateEstadoMutation.mutate({ id: entrada.id, estado: nuevoEstado });
-  };
 
   if (!isAuthenticated) {
     return null;
   }
+
+  const eventos = data?.data || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-600 to-blue-600">
@@ -97,14 +39,14 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-600">
-                🎭 Carnaval 2026
+                🎟️ {user?.nombreEntidad || 'Entradas Paceñas'}
               </h1>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-gray-700">Hola, {user?.nombreUsuario}</span>
               <button
                 onClick={logout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
               >
                 Cerrar Sesión
               </button>
@@ -114,78 +56,62 @@ export default function DashboardPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="flex-1 w-full flex flex-col items-center">
-            {ingresosData && (
-              <div className="mb-4 bg-white/10 p-3 rounded-lg shadow border border-gray-200 flex items-center gap-4">
-                <span className="text-xl font-bold text-white tracking-widest bg-gradient-to-r from-red-600 to-blue-600 px-4 py-2 rounded-md shadow-inner">
-                  Total Ingresos: {ingresosData.total}
-                </span>
-                <button
-                  onClick={() => manualIngresoMutation.mutate()}
-                  disabled={manualIngresoMutation.isPending}
-                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                >
-                  {manualIngresoMutation.isPending ? 'Procesando...' : 'Entrada en caja'}
-                </button>
-              </div>
-            )}
-            <div className="w-full sm:max-w-md">
-              <input
-                type="text"
-                placeholder="Buscar por DNI, nombre o apellido..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex gap-3">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-white shadow-sm">Tus Eventos</h2>
+          {user?.rol === 'admin' && (
             <button
-              onClick={() => setShowScanner(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition flex items-center gap-2"
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-neutral-800 text-white rounded-lg font-semibold hover:bg-neutral-900 shadow-xl transform hover:scale-105 transition"
             >
-              Escanear QR
+              + Nuevo Evento
             </button>
-            { /*
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-neutral-800 text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition"
-              >
-                + Crear Entrada
-              </button>
-            */ }
-          </div>
+          )}
         </div>
 
-        <EntradaList
-          entradas={entradas}
-          isLoading={isLoading}
-          onToggleEstado={handleToggleEstado}
-          currentPage={page}
-          totalPages={meta.totalPages}
-          total={meta.total}
-          onPageChange={setPage}
-        />
+        {isLoading ? (
+          <div className="flex justify-center p-8">
+            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+          </div>
+        ) : eventos.length === 0 ? (
+          <div className="p-8 text-center bg-white/10 rounded-xl border border-white/20 text-white">
+            <p className="text-xl">No hay eventos creados todavía.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {eventos.map((evento) => {
+              const dateEvento = new Date(evento.fechaEvento).toLocaleDateString('es-AR', { timeZone: 'UTC' });
+              const limitSale = new Date(evento.fechaVentaHasta).toLocaleDateString('es-AR', { timeZone: 'UTC' }) + ' ' + evento.horaVentaHasta.slice(11, 16) + ' hs';
+              return (
+                <div
+                  key={evento.id}
+                  onClick={() => router.push(`/dashboard/evento/${evento.id}`)}
+                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 border border-gray-100"
+                >
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2 truncate">{evento.nombre}</h3>
+                  {evento.descripcion && <p className="text-gray-600 text-sm mb-4 line-clamp-2">{evento.descripcion}</p>}
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between p-2 bg-blue-50 rounded text-blue-800 font-medium">
+                      <span>Día del Evento:</span>
+                      <span>{dateEvento}</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-red-50 rounded text-red-800 font-medium">
+                      <span>Cierre de Ventas:</span>
+                      <span>{limitSale}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {showCreateModal && (
-          <CreateEntradaModal
+          <CreateEventoModal
             onClose={() => setShowCreateModal(false)}
             onSuccess={() => {
               setShowCreateModal(false);
-              queryClient.invalidateQueries({ queryKey: ['entradas'] });
-            }}
-          />
-        )}
-
-        {showScanner && (
-          <QRScanner
-            onClose={() => setShowScanner(false)}
-            onScan={(entradaId) => {
-              scanMutation.mutate(entradaId);
+              queryClient.invalidateQueries({ queryKey: ['eventos'] });
             }}
           />
         )}

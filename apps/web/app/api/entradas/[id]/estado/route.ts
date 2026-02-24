@@ -49,8 +49,8 @@ export async function PATCH(
       if (estadoPrisma === 'INGRESO_REGISTRADO') {
         await tx.ingreso.upsert({
           where: { idEntrada: entradaId },
-          update: {},
-          create: { idEntrada: entradaId },
+          update: { idEvento: updated.idEvento },
+          create: { idEntrada: entradaId, idEvento: updated.idEvento },
         });
       } else {
         await tx.ingreso.deleteMany({

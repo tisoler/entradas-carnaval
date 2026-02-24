@@ -9,7 +9,16 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
 
-        const total = await prisma.ingreso.count();
+        const searchParams = request.nextUrl.searchParams;
+        const idEventoParam = searchParams.get('idEvento');
+
+        if (!idEventoParam) {
+            return NextResponse.json({ error: 'idEvento es requerido' }, { status: 400 });
+        }
+
+        const total = await prisma.ingreso.count({
+            where: { idEvento: parseInt(idEventoParam, 10) }
+        });
 
         return NextResponse.json({ total });
     } catch (error) {
@@ -28,9 +37,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
 
+        const { idEvento } = await request.json();
+
+        if (!idEvento) {
+            return NextResponse.json({ error: 'idEvento es requerido' }, { status: 400 });
+        }
+
         const nuevoIngreso = await prisma.ingreso.create({
             data: {
                 idEntrada: null,
+                idEvento,
             },
         });
 

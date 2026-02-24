@@ -12,6 +12,9 @@ interface EntradaListProps {
   totalPages: number;
   total: number;
   onPageChange: (page: number) => void;
+  ventaFinalizada?: boolean;
+  eventoFinalizado?: boolean;
+  nombreImagen?: string | null;
 }
 
 const ITEMS_PER_PAGE = 30;
@@ -23,7 +26,10 @@ export default function EntradaList({
   currentPage,
   totalPages,
   total,
-  onPageChange
+  onPageChange,
+  ventaFinalizada,
+  eventoFinalizado,
+  nombreImagen
 }: EntradaListProps) {
   const [showModal, setShowModal] = useState(false);
   const [selectedEntrada, setSelectedEntrada] = useState<Entrada | null>(null);
@@ -56,7 +62,13 @@ export default function EntradaList({
 
   if (showModal && selectedEntrada) {
     return (
-      <EntradaCardModal entrada={selectedEntrada} onClose={() => setShowModal(false)} />
+      <EntradaCardModal
+        entrada={selectedEntrada}
+        onClose={() => setShowModal(false)}
+        ventaFinalizada={ventaFinalizada}
+        eventoFinalizado={eventoFinalizado}
+        nombreImagen={nombreImagen}
+      />
     );
   }
 
@@ -85,17 +97,18 @@ export default function EntradaList({
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                 Estado
               </th>
-              <th className="hidden md:table-cell px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Acción
-              </th>
+              {!eventoFinalizado && (
+                <th className="hidden md:table-cell px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Acción
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {entradas.map((entrada) => {
               const isRegistrado = entrada.estado === 'ingreso registrado';
               return (
-                <tr key={entrada.id} className="hover:bg-gray-50 transition-colors">
-                  {/* onClick={() => onOpenModal(entrada)} */}
+                <tr key={entrada.id} className="hover:bg-gray-50 transition-colors" onClick={() => onOpenModal(entrada)}>
                   <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                     {entrada.nombre}
                   </td>
@@ -127,28 +140,38 @@ export default function EntradaList({
                       {isRegistrado ? '✓ Ingreso Registrado' : '⏳ Pendiente Ingreso'}
                     </span>
                   </td>
-                  <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
-                    <button
-                      onClick={(e) => onToggleEstado(e, entrada)}
-                      className={`px-4 py-2 rounded-lg font-semibold text-xs transition ${isRegistrado
-                        ? 'bg-orange-500 text-white hover:bg-orange-600'
-                        : 'bg-green-500 text-white hover:bg-green-600'
-                        }`}
-                    >
-                      {isRegistrado ? '↩️ Marcar Pendiente' : '✓ Marcar Registrado'}
-                    </button>
-                  </td>
-                  <td className="table-cell md:hidden px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
-                    <button
-                      onClick={(e) => onToggleEstado(e, entrada)}
-                      className={`px-2 py-3 rounded-lg font-semibold text-xs transition text-wrap ${isRegistrado
-                        ? 'bg-green-500 text-white hover:bg-green-600'
-                        : 'bg-orange-500 text-white hover:bg-orange-600'
-                        }`}
-                    >
-                      {isRegistrado ? 'Ingreso Registrado' : 'Pendiente Ingreso'}
-                    </button>
-                  </td>
+                  {!eventoFinalizado && (
+                    <>
+                      <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleEstado(e, entrada);
+                          }}
+                          className={`px-4 py-2 rounded-lg font-semibold text-xs transition ${isRegistrado
+                            ? 'bg-orange-500 text-white hover:bg-orange-600'
+                            : 'bg-green-500 text-white hover:bg-green-600'
+                            }`}
+                        >
+                          {isRegistrado ? '↩️ Marcar Pendiente' : '✓ Marcar Registrado'}
+                        </button>
+                      </td>
+                      <td className="table-cell md:hidden px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleEstado(e, entrada);
+                          }}
+                          className={`px-2 py-3 rounded-lg font-semibold text-xs transition text-wrap ${isRegistrado
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                            }`}
+                        >
+                          {isRegistrado ? 'Ingreso Registrado' : 'Pendiente Ingreso'}
+                        </button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               );
             })}

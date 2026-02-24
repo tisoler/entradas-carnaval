@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.usuario.findUnique({
       where: { nombreUsuario },
+      include: {
+        entidad: true,
+      },
     });
 
     if (!user) {
@@ -38,12 +41,16 @@ export async function POST(request: NextRequest) {
       id: user.id,
       nombreUsuario: user.nombreUsuario,
       rol: user.rol,
+      idEntidad: user.idEntidad,
+      nombreEntidad: user.entidad.nombre,
     });
 
     const refreshToken = generateRefreshToken({
       id: user.id,
       nombreUsuario: user.nombreUsuario,
       rol: user.rol,
+      idEntidad: user.idEntidad,
+      nombreEntidad: user.entidad.nombre,
     });
 
     return NextResponse.json({
@@ -53,6 +60,8 @@ export async function POST(request: NextRequest) {
         id: user.id,
         nombreUsuario: user.nombreUsuario,
         rol: user.rol,
+        idEntidad: user.idEntidad,
+        nombreEntidad: user.entidad.nombre,
       },
     });
   } catch (error) {
