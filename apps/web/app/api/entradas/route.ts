@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
     // Convertir a formato esperado por el frontend
     const formattedEntradas = entradas.map((entrada: any) => ({
       id: entrada.id,
+      numero: entrada.numero,
       nombre: entrada.nombre,
       apellido: entrada.apellido,
       dni: entrada.dni,
@@ -109,20 +110,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const entrada = await prisma.entrada.create({
-      data: {
-        nombre,
-        apellido,
-        dni,
-        estado: 'PENDIENTE_INGRESO',
-        idUsuario,
-        idEvento,
-      },
+    // Iniciar transacción de Prisma para obtener el siguiente número y crear la entrada
+    const entrada = await prisma.$transaction(async (tx) => {
+      // 1. Obtener el número máximo actual para este evento
+      const maxEntrada = await tx.entrada.findFirst({
+        where: { idEvento },
+        orderBy: { numero: 'desc' },
+        select: { numero: true }
+      });
+
+      const nextNumero = (maxEntrada?.numero || 0) + 1;
+
+      // 2. Crear la entrada con el nuevo número
+      return await tx.entrada.create({
+        data: {
+          numero: nextNumero,
+          nombre,
+          apellido,
+          dni,
+          estado: 'PENDIENTE_INGRESO',
+          idUsuario,
+          idEvento,
+        },
+      });
     });
 
     // Convertir a formato esperado por el frontend
     const formattedEntrada = {
       id: entrada.id,
+      numero: entrada.numero,
       nombre: entrada.nombre,
       apellido: entrada.apellido,
       dni: entrada.dni,

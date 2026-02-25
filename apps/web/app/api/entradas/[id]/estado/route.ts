@@ -64,6 +64,7 @@ export async function PATCH(
     // Convertir a formato esperado por el frontend
     const formattedEntrada = {
       id: entrada.id,
+      numero: entrada.numero,
       nombre: entrada.nombre,
       apellido: entrada.apellido,
       dni: entrada.dni,

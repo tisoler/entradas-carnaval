@@ -8,6 +8,7 @@ export interface Usuario {
 
 export interface Entrada {
   id: number;
+  numero: number;
   nombre: string;
   apellido: string;
   dni: string;

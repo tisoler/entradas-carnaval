@@ -68,7 +68,7 @@ export default function EntradaCard({ entrada, ref, ventaFinalizada, evento }: E
           </div>
           <div className="flex gap-2">
             <span className="text-gray-900 font-medium text-sm">N°:</span>
-            <span className="text-gray-900 font-bold text-sm">{entrada.id}</span>
+            <span className="text-gray-900 font-bold text-sm">{entrada.numero}</span>
           </div>
         </div>
       </div>
