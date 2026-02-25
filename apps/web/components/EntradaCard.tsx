@@ -1,19 +1,27 @@
 'use client';
 
 import { QRCodeSVG } from 'qrcode.react'
-import { Entrada } from '@/types'
+import { Entrada, Evento } from '@/types'
 import Image from 'next/image';
 
 interface EntradaCardProps {
   entrada: Entrada
   ref?: React.RefObject<HTMLDivElement | null>
   ventaFinalizada?: boolean
-  nombreImagen?: string | null
+  evento?: Evento | null
 }
 
-export default function EntradaCard({ entrada, ref, ventaFinalizada, nombreImagen }: EntradaCardProps) {
+export default function EntradaCard({ entrada, ref, ventaFinalizada, evento }: EntradaCardProps) {
   const qrValue = `${entrada.id}-${entrada.dni}`
-  const bgImage = nombreImagen ? `https://tisolercdn.nyc3.cdn.digitaloceanspaces.com/entradas_eventos/${nombreImagen}` : '/entrada.webp';
+  const bgImage = evento?.nombreImagen ? `/api/proxy-image?url=${encodeURIComponent('https://tisolercdn.nyc3.cdn.digitaloceanspaces.com/entradas_eventos/' + evento.nombreImagen)}` : '/entrada.webp';
+
+  const qrColor = evento?.colorFondoQR || '#FFFFFF';
+  const qrY = evento?.coordenadaYQR !== undefined ? evento.coordenadaYQR : 336;
+  const qrX = evento?.coordenadaXQR !== undefined ? evento.coordenadaXQR : 100;
+
+  const datosY = evento?.coordenadaYDatos !== undefined ? evento.coordenadaYDatos : 631;
+  const datosX = evento?.coordenadaXDatos !== undefined ? evento.coordenadaXDatos : 65;
+  const dimensionQR = evento?.dimensionQR !== undefined ? evento.dimensionQR : 122;
 
   return (
     <div className="relative flex justify-center w-[320px] h-[796px]" ref={ref}>
@@ -30,7 +38,7 @@ export default function EntradaCard({ entrada, ref, ventaFinalizada, nombreImage
         />
       </div>
       {/* QR Code - Grande y destacado */}
-      <div className="absolute top-[336px] left-[100px]">
+      <div className="absolute" style={{ top: `${qrY}px`, left: `${qrX}px` }}>
         {ventaFinalizada ? (
           <div className="bg-red-600/90 w-[122px] h-[122px] flex items-center justify-center rounded-sm text-center font-bold text-white text-md border border-red-800">
             VENTA<br />FINALIZADA
@@ -38,17 +46,17 @@ export default function EntradaCard({ entrada, ref, ventaFinalizada, nombreImage
         ) : (
           <QRCodeSVG
             value={qrValue}
-            size={122}
+            size={dimensionQR}
             level="H"
             includeMargin={false}
             className="rounded-sm"
-            bgColor='#e8caa2'
+            bgColor={qrColor}
           />
         )}
       </div>
 
       {/* Datos de la persona */}
-      <div className="absolute top-[631px] left-[65px]">
+      <div className="absolute" style={{ top: `${datosY}px`, left: `${datosX}px` }}>
         <div className="">
           <div className="flex gap-2">
             <span className="text-gray-900 font-medium text-sm">Nombre:</span>

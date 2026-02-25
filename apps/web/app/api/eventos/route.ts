@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { nombre, descripcion, fechaVentaHasta, horaVentaHasta, fechaEvento, nombreImagen } = body;
+        const { nombre, descripcion, fechaVentaHasta, horaVentaHasta, fechaEvento, nombreImagen, dimensionQR } = body;
 
         if (!nombre || !fechaVentaHasta || !horaVentaHasta || !fechaEvento) {
             return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
                 fechaVentaHasta: new Date(fechaVentaHasta),
                 horaVentaHasta: new Date(`1970-01-01T${horaVentaFormatted}Z`),
                 fechaEvento: new Date(fechaEvento),
-                nombreImagen
+                nombreImagen,
+                dimensionQR: dimensionQR !== undefined ? Number(dimensionQR) : 122,
             }
         });
 

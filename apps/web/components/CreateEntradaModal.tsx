@@ -4,17 +4,17 @@ import { useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import EntradaCard from './EntradaCard'
-import { Entrada } from '@/types'
+import { Entrada, Evento } from '@/types'
 import html2canvas from 'html2canvas';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface CreateEntradaModalProps {
   onClose: () => void
   onSuccess: () => void
-  idEvento: number
+  evento: Evento
 }
 
-export default function CreateEntradaModal({ onClose, onSuccess, idEvento }: CreateEntradaModalProps) {
+export default function CreateEntradaModal({ onClose, onSuccess, evento }: CreateEntradaModalProps) {
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [dni, setDni] = useState('')
@@ -37,7 +37,7 @@ export default function CreateEntradaModal({ onClose, onSuccess, idEvento }: Cre
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    createMutation.mutate({ nombre, apellido, dni, idUsuario: user?.id, idEvento })
+    createMutation.mutate({ nombre, apellido, dni, idUsuario: user?.id, idEvento: evento.id })
   }
   /*
     const handleShare = async () => {
@@ -163,7 +163,7 @@ export default function CreateEntradaModal({ onClose, onSuccess, idEvento }: Cre
                 </button>
               </div>
             </div>
-            <EntradaCard entrada={createdEntrada} ref={divEntrada} />
+            <EntradaCard entrada={createdEntrada} ref={divEntrada} evento={evento} />
           </div>
         </div>
       </div>
@@ -171,8 +171,8 @@ export default function CreateEntradaModal({ onClose, onSuccess, idEvento }: Cre
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-md w-full">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Crear Nueva Entrada</h2>

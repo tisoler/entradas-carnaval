@@ -50,6 +50,12 @@ export interface Evento {
   horaVentaHasta: string;
   fechaEvento: string;
   nombreImagen: string | null;
+  colorFondoQR: string;
+  coordenadaYQR: number;
+  coordenadaXQR: number;
+  coordenadaYDatos: number;
+  coordenadaXDatos: number;
+  dimensionQR: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,4 +67,10 @@ export interface CreateEventoRequest {
   horaVentaHasta: string;
   fechaEvento: string;
   nombreImagen?: string;
+  colorFondoQR?: string;
+  coordenadaYQR?: number;
+  coordenadaXQR?: number;
+  coordenadaYDatos?: number;
+  coordenadaXDatos?: number;
+  dimensionQR?: number;
 }

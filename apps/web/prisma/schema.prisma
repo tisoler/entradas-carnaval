@@ -76,6 +76,12 @@ model Evento {
   horaVentaHasta  DateTime  @db.Time
   fechaEvento     DateTime  @db.Date
   nombreImagen    String?   @db.VarChar(255)
+  colorFondoQR    String    @default("#FFFFFF") @db.VarChar(20)
+  coordenadaYQR   Int       @default(336)
+  coordenadaXQR   Int       @default(100)
+  coordenadaYDatos Int      @default(631)
+  coordenadaXDatos Int      @default(65)
+  dimensionQR     Int       @default(122)
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   

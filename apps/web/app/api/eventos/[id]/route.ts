@@ -61,7 +61,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { nombre, descripcion, fechaVentaHasta, horaVentaHasta, fechaEvento, nombreImagen } = body;
+    const {
+      nombre, descripcion,
+      fechaVentaHasta, horaVentaHasta, fechaEvento, nombreImagen,
+      colorFondoQR, coordenadaYQR, coordenadaXQR, coordenadaYDatos, coordenadaXDatos, dimensionQR
+    } = body;
 
     let horaVentaParsed = undefined;
     if (horaVentaHasta) {
@@ -77,7 +81,13 @@ export async function PUT(
         fechaVentaHasta: fechaVentaHasta ? new Date(fechaVentaHasta) : undefined,
         horaVentaHasta: horaVentaParsed,
         fechaEvento: fechaEvento ? new Date(fechaEvento) : undefined,
-        nombreImagen
+        nombreImagen,
+        colorFondoQR,
+        coordenadaYQR: coordenadaYQR !== undefined ? Number(coordenadaYQR) : undefined,
+        coordenadaXQR: coordenadaXQR !== undefined ? Number(coordenadaXQR) : undefined,
+        coordenadaYDatos: coordenadaYDatos !== undefined ? Number(coordenadaYDatos) : undefined,
+        coordenadaXDatos: coordenadaXDatos !== undefined ? Number(coordenadaXDatos) : undefined,
+        dimensionQR: dimensionQR !== undefined ? Number(dimensionQR) : undefined,
       }
     });
 
