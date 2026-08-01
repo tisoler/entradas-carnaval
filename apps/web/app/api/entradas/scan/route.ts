@@ -18,18 +18,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar la entrada y verificar que esté pendiente
-    const entrada = await prisma.entrada.findFirst({
-      where: {
-        id: entradaId,
-        estado: 'PENDIENTE_INGRESO',
-      },
+    // Buscar la entrada
+    const entrada = await prisma.entrada.findUnique({
+      where: { id: entradaId },
     });
 
     if (!entrada) {
       return NextResponse.json(
-        { error: 'Entrada no encontrada o ya registrada' },
+        { error: 'Entrada no encontrada' },
         { status: 404 }
+      );
+    }
+
+    if (entrada.estado === 'INGRESO_REGISTRADO') {
+      return NextResponse.json(
+        {
+          error: 'Esta entrada ya fue registrada',
+          entrada: {
+            id: entrada.id,
+            nombre: entrada.nombre,
+            apellido: entrada.apellido,
+            dni: entrada.dni,
+            estado: 'ingreso registrado',
+            fecha_creacion: entrada.fechaCreacion.toISOString(),
+            fecha_ingreso: entrada.fechaIngreso?.toISOString() || null,
+          }
+        },
+        { status: 400 }
       );
     }
 

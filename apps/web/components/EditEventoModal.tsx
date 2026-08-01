@@ -282,6 +282,7 @@ export default function EditEventoModal({ evento, onClose, onSuccess }: EditEven
                 <EntradaCardModal
                     entrada={{
                         id: 999,
+                        numero: 320,
                         nombre: 'Aníbal',
                         apellido: 'Matellán',
                         dni: '12345678',

@@ -21,6 +21,11 @@ export default function EventoPage() {
     const [page, setPage] = useState(1);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
+    const [scanResult, setScanResult] = useState<{
+        success: boolean;
+        message: string;
+        entrada?: Entrada;
+    } | null>(null);
     const queryClient = useQueryClient();
 
     // Obtener detalles del evento para validación de tiempos
@@ -99,8 +104,6 @@ export default function EventoPage() {
         },
     });
 
-
-
     const entradas = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 30, totalPages: 1 };
 
@@ -115,16 +118,23 @@ export default function EventoPage() {
 
     const scanMutation = useMutation({
         mutationFn: (entradaId: number) => api.scanEntrada(entradaId),
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['entradas', idEvento] });
             queryClient.invalidateQueries({ queryKey: ['ingresos_total', idEvento] });
             setShowScanner(false);
-            alert('Ingreso registrado exitosamente');
-            router.push('/');
+            setScanResult({
+                success: true,
+                message: 'Ingreso registrado exitosamente',
+                entrada: data
+            });
         },
         onError: (error: any) => {
-            alert(error.message || 'Error al escanear entrada');
-            router.push('/');
+            setShowScanner(false);
+            setScanResult({
+                success: false,
+                message: error.message || 'Error al escanear entrada',
+                entrada: error.entrada
+            });
         },
     });
 
@@ -259,6 +269,62 @@ export default function EventoPage() {
                             scanMutation.mutate(entradaId);
                         }}
                     />
+                )}
+
+                {scanResult && (
+                    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[60]">
+                        <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+                            <div className="text-center">
+                                <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${scanResult.success ? 'bg-green-100' : 'bg-red-100'
+                                    }`}>
+                                    {scanResult.success ? (
+                                        <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <h3 className={`text-2xl font-bold mb-2 ${scanResult.success ? 'text-green-800' : 'text-red-800'
+                                    }`}>
+                                    {scanResult.success ? '¡Lectura Exitosa!' : 'Error de Lectura'}
+                                </h3>
+                                <p className="text-gray-600 font-medium mb-6">
+                                    {scanResult.message}
+                                </p>
+
+                                {scanResult.entrada && (
+                                    <div className={`rounded-xl p-4 mb-6 text-left border ${scanResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                                        }`}>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            <div className="flex justify-between border-b pb-1">
+                                                <span className="text-sm font-semibold text-gray-500">Nombre:</span>
+                                                <span className="text-sm font-bold text-gray-800">
+                                                    {scanResult.entrada.nombre} {scanResult.entrada.apellido}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm font-semibold text-gray-500">DNI:</span>
+                                                <span className="text-sm font-bold text-gray-800">{scanResult.entrada.dni}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => setScanResult(null)}
+                                    className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition active:scale-95 ${scanResult.success
+                                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                                            : 'bg-red-600 hover:bg-red-700 text-white'
+                                        }`}
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </main>
         </div>

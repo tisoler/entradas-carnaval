@@ -10,6 +10,7 @@ interface QRScannerProps {
 
 export default function QRScanner({ onClose, onScan }: QRScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null)
+  const isProcessingRef = useRef(false)
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,13 +27,20 @@ export default function QRScanner({ onClose, onScan }: QRScannerProps) {
             qrbox: { width: 250, height: 250 },
           },
           (decodedText) => {
+            if (isProcessingRef.current) return;
+
             try {
               // El QR contiene: "id-dni"
               const parts = decodedText.split('-')
               if (parts.length >= 1) {
                 const entradaId = parseInt(parts[0])
                 if (!isNaN(entradaId)) {
+                  isProcessingRef.current = true;
                   scanner.stop().then(() => {
+                    setScanning(false)
+                    onScan(entradaId)
+                  }).catch(err => {
+                    console.error('Error stopping scanner:', err);
                     setScanning(false)
                     onScan(entradaId)
                   })

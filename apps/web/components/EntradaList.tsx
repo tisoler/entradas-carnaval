@@ -79,6 +79,9 @@ export default function EntradaList({
                 <table className="w-full">
                     <thead className="bg-gray-100">
                         <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                N°
+                            </th>
                             <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 Nombre
                             </th>
@@ -109,6 +112,9 @@ export default function EntradaList({
                             const isRegistrado = entrada.estado === 'ingreso registrado';
                             return (
                                 <tr key={entrada.id} className="hover:bg-gray-50 transition-colors" onClick={() => onOpenModal(entrada)}>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {entrada.numero}
+                                    </td>
                                     <td className="hidden md:table-cell px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {entrada.nombre}
                                     </td>

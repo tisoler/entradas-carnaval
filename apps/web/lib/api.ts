@@ -157,12 +157,15 @@ export const api = {
       body: JSON.stringify({ entradaId }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al escanear entrada');
+      const error: any = new Error(data.error || 'Error al escanear entrada');
+      error.entrada = data.entrada;
+      throw error;
     }
 
-    return response.json();
+    return data;
   },
 
   async getIngresosTotal(idEvento: number): Promise<{ total: number }> {

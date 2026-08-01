@@ -251,6 +251,7 @@ export default function CreateEventoModal({ onClose, onSuccess }: CreateEventoMo
                 <EntradaCardModal
                     entrada={{
                         id: 999,
+                        numero: 320,
                         nombre: 'Aníbal',
                         apellido: 'Matellán',
                         dni: '12345678',
