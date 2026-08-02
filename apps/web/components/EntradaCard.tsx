@@ -13,7 +13,7 @@ interface EntradaCardProps {
 
 export default function EntradaCard({ entrada, ref, ventaFinalizada, evento }: EntradaCardProps) {
   const qrValue = `${entrada.id}-${entrada.dni}`
-  const bgImage = evento?.nombreImagen ? `/api/proxy-image?url=${encodeURIComponent('https://tisolercdn.nyc3.cdn.digitaloceanspaces.com/entradas_eventos/' + evento.nombreImagen)}` : '/entrada.webp';
+  const bgImage = `/api/proxy-image?url=${encodeURIComponent('https://tisolercdn.nyc3.cdn.digitaloceanspaces.com/entradas_eventos/' + (evento?.nombreImagen ?? 'carnaval2026.webp'))}`;
 
   const qrColor = evento?.colorFondoQR || '#FFFFFF';
   const qrY = evento?.coordenadaYQR !== undefined ? evento.coordenadaYQR : 336;
