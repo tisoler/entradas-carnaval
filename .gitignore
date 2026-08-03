@@ -39,3 +39,6 @@ Thumbs.db
 
 # Next.js
 .next
+
+# Docker
+docker-compose.yml
