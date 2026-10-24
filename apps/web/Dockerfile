@@ -1,5 +1,5 @@
 # Dockerfile para Next.js
-FROM node:20-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 
 # Install dependencies only when needed
 WORKDIR /carnaval-web
@@ -15,7 +15,7 @@ COPY . .
 RUN yarn build
 
 # Stage 2: Run the built code
-FROM node:23-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 WORKDIR /carnaval-web
 
 # Set to production
